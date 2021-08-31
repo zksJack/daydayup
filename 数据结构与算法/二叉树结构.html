@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* 节点样式 */
+        b{
+            display: inline-block;
+            width: 20px;
+            background-color: aqua;
+            border-radius: 50%;
+            padding: 5px
+        }
+        div.tree {
+            display: flex;
+            flex-wrap: wrap;/*span 需要独占一行，所以此 flex 布局必须要折行显示 */
+            align-items: flex-start; 
+        }
+        div.tree > span {
+            width: 100%;
+            text-align: center;
+            padding-bottom: 3em;
+            background-image: url(./img/both.svg);
+            background-repeat: no-repeat;
+        }
+         /* 巧妙地子节点位置放置 */
+         .tree > .tree {
+            width: 50%;
+        }
+        /* 只有一个右节点使用 */
+        div.just_only_right{
+            flex-direction:row-reverse;  /*改变主轴的方向 */
+        }
+        div.just_only_right > span{
+           background-image: url(./img/right.svg);
+        }
+        /* 只有一个左节点使用 */
+        div.just_only_left > span {
+            background-image: url(./img/left.svg);
+        }
+        div.no_child_node > span {
+            background-image: none;
+        }
+        /* 左右子节点单独设置样式 */
+        div.tree > .nleft {
+            width: 50%;
+            color: brown;
+        }
+        div.tree > .nright {
+            width: 50%;
+            color: aquamarine;
+        }
+       
+    </style>
+</head>
+<body>
+    <h1 id = 'show'></h1>
+    <!-- 测试结构 -->
+    <!-- <div class="tree">
+        <span class="leaf-node">【1】</span>
+        <div class="tree">
+            <span class="leaf-node">【2】</span>
+            <div class="tree">
+              <span class="leaf-node">【5】</span>
+            </div>
+            <div class="tree nright" >
+              <span class="leaf-node">【5】</span>
+            </div>
+        </div>
+        <div class="tree just_only_right">
+            <span class="leaf-node">【2】</span>
+            <div class="tree ">
+              <span class="leaf-node">【5】</span>
+              <div class="tree no_child_node">
+                <span class="leaf-node">【5】</span>
+              </div>
+            </div>
+        </div>
+    </div> -->
+    <script>
+        // 节点
+        class Node{
+            constructor(data,left,right){
+                this.data = data;
+                this.left = left;
+                this.right =right;
+            }
+            show(){
+                return this.data;
+            }
+        }
+        //二叉树
+        class BST{
+            constructor(){
+                this.root = null;
+                this.rootArr = null;
+            }
+            insert(data){
+                let n = new Node(data,null,null);
+                if(this.root == null) {this.root = n;}
+                else{
+                    let current = this.root;
+                    let parent;
+                    while(true){
+                        parent = current;
+                        if(data<current.data){
+                            current = current.left;
+                            if(current == null) {
+                                parent.left = n;break
+                            }
+                        }else{
+                            current = current.right;
+                            if(current == null){
+                                parent.right = n;break;
+                            }
+                        }
+                    }
+                }
+            }
+            //展示bst的arr结构
+            show(){
+                this.inOrder(this.root)
+                return this.rootArr;
+            }
+            inOrder(node){
+                if(node != null){
+                    this.inOrder(node.left);
+                    this.rootArr?'':this.rootArr=[];
+                    this.rootArr.push(node.show());
+                    this.inOrder(node.right);
+                }
+            }
+            //展示bst的tree结构
+            showTree2Html(root){
+                if(root){
+                    let onlyLeft  = (root.left && !root.right)
+                    let onlyRight = (!root.left && root.right)
+                    let noSubTree = !root.left && !root.right
+                    return `
+                    <div id='rootNode' class="
+                        tree
+                        ${noSubTree?'no_child_node':''}
+                        ${onlyLeft?'just_only_left':''}
+                        ${onlyRight?'just_only_right':''}
+                    ">
+                        <span> <b>${root.data}</b> </span>
+                        ${root.left?this.showTree2Html(root.left):''}
+                        ${root.right?this.showTree2Html(root.right):''}
+                    </div>
+                    `                    
+                }
+            }
+    }
+    function main(){
+        let BSTObj  =  new BST();
+        new Array(20).fill('').forEach(element => {
+            BSTObj.insert(parseInt(Math.random()*100))
+        });
+        let _html = document.getElementById('show')
+        let _body = document.body;
+        //DOMParser 实例的parseFromString方法可以用来直接将字符串转换为document 文档对象
+        let _treedoc = new DOMParser().parseFromString(BSTObj.showTree2Html(BSTObj.root), 'text/html') 
+        let _tree = _treedoc.getElementById('rootNode')
+        _html.innerHTML = BSTObj.show().toString();
+        _body.appendChild(_tree)
+    }
+    main();
+    </script>
+</body>
+</html>
