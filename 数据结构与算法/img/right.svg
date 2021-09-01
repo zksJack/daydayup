@@ -3,5 +3,14 @@
 <line x1="50%" y1="1.5em" x2="75%" y2="95%" stroke-linecap="round" stroke-linejoin="round" style="stroke:rgb(99,99,99);stroke-width:3"/>
 
 <!-- <line x1="50%" y1="1.5em" x2="75%" y2="95%" stroke-linecap="round" stroke-linejoin="round" style="stroke:rgb(99,99,99);stroke-width:3"/> -->
-
+  line{
+        stroke-dasharray: 520;
+        stroke-dashoffset: 520;
+        animation: dash 1s forwards;
+    }
+    @keyframes dash {
+        to{
+            stroke-dashoffset: 0;
+        }
+    }
 </svg>
