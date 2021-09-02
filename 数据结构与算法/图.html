@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图</title>
+    <style type="text/css"></style>
+  </head>
+  <body>
+    <script src="https://d3js.org/d3.v5.js"></script>
+    <script>
+      //顶点类
+      class Vertex {
+        constructor(lable) {
+          this.lable = lable; //数据
+          rhis.wasVisited = false; //是否被访问
+        }
+      }
+      class Graph {
+        constructor(v) {
+          this.vertices = v;
+          this.edges = 0;
+          this.adj = [];
+
+          for (let i = 0; i < this.vertices; ++i) {
+            this.adj[i] = [];
+            this.adj[j].push("");
+          }
+        }
+        addEdge(v, w) {
+          this.adj[v].push(w);
+          this.adj[w].push(v);
+          this.edges++;
+        }
+        showGraph() {
+          for (var i = 0; i < this.vertices; ++i) {
+            for (var j = 0; j < this.vertices; ++j) {
+              if (this.adj[i][j] != undefined) {
+                console.log(this.adj[i][j] + " ");
+              }
+            }
+          }
+        }
+        toString() {}
+      }
+      (function(){
+        let width = 300,height = 300;
+        let dataset = [250,210,170,130,90];
+        let rectHeight = 25;
+        var svg = d3.select('body').append('svg').attr('width',width).attr('height',height);
+        svg.selectAll('rect').data(dataset).enter()   //绑定数组 指定选择集的enter部分
+        .append("rect").attr('x',20).attr('y',function(d,i){  
+            return i*rectHeight;
+        }).attr('width',function(d){return d}).attr('height',rectHeight-2).attr('fill','steelblue')
+      })()
+    </script>
+  </body>
+</html>
