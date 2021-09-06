@@ -22,6 +22,19 @@
     <Button id='addBtn'> 添加节点</Button>
     <script src="js/d3.js"></script>
     <script>
+      // 测试数据
+      //  let lines = [
+      //   { source: 0, target: 1, value: 0 },
+      //   { source: 1, target: 2, value: 3 },
+      //   { source: 2, target: 3, value: 2 },
+      //   { source: 3, target: 3, value: 1 },
+      //   ];
+      //   let nodes = [
+      //     { name: "L", group: 5 },
+      //     { name: "O", group: 6 },
+      //     { name: "V", group: 7 },
+      //     { name: "E", group: 8 },
+      //   ];
       //顶点类
       class Vertex {
         constructor(lable) {
@@ -34,25 +47,59 @@
           this.vertices = v;
           this.edges = 0;
           this.adj = [];
-
+          this.force=null;
           for (let i = 0; i < this.vertices; ++i) {
             this.adj[i] = [];
-            this.adj[j].push("");
           }
         }
         addEdge(v, w) {
-          this.adj[v].push(w);
-          this.adj[w].push(v);
-          this.edges++;
-        }
-        showGraph() {
-          for (var i = 0; i < this.vertices; ++i) {
-            for (var j = 0; j < this.vertices; ++j) {
-              if (this.adj[i][j] != undefined) {
-                console.log(this.adj[i][j] + " ");
+          console.log(v,w,this.vertices);
+          if(v>this.vertices || w>this.vertices) {
+            alert('数据错误')
+          }else{
+            if(!this.force){
+              this.showGraph()
+            }
+            if(!this.adj[v]) this.adj[v]=[];
+            if(!this.adj[w]) this.adj[w]=[];
+
+            if(this.adj[v].findIndex(t=>t==w) == -1){
+              this.adj[v].push(w)
+              this.adj[w].push(v)
+              this.edges++;
+              if(v==this.vertices || w==this.vertices){
+                this.vertices = v>w?v+1:w+1;
+                this.force.updata([{ source: v, target: w, value: 0 }],{name: Graph.getRandomChineseWord(), group: Graph.randomFrom(10,20)})
+              }else{
+                this.force.updata([{ source: v, target: w, value: 0 }])
               }
             }
           }
+        }
+         //生成随机汉字
+        static getRandomChineseWord() {
+                var _rsl = "";
+                var _randomUniCode = Math.floor(Math.random() * (40870 - 19968) + 19968).toString(16);
+                eval("_rsl=" + '"\\u' + _randomUniCode + '"');
+                return _rsl;
+        }
+        //获取指定区间范围随机数，包括lowerValue和upperValue
+        static randomFrom(lowerValue,upperValue) {
+           return Math.floor(Math.random() * (upperValue - lowerValue + 1) + lowerValue);
+        }
+        showGraph() {
+          let links = [];
+          let nodes = [];
+          this.force = new Force(links,nodes,1900, 940)
+          for (var i = 0; i < this.vertices; ++i) {
+            for (var j = 0; j < this.vertices; ++j) {
+              if (this.adj[i][j] != undefined) {
+                links.push( { source: i, target: j, value: 0 })
+              }
+            }
+            nodes.push({ name: Graph.getRandomChineseWord(), group: Graph.randomFrom(10,20)})
+          }
+          this.force.init();
         }
         toString() {}
       }
@@ -71,11 +118,12 @@
           this.dependsLinkAndText = [];
         }
         getd3Force(){
-          return d3.layout
-            .force()
-            .charge(-150)
-            .linkDistance(100)
-            .size([this.width, this.height]);
+          // return d3.layout
+          //   .force()
+          //   .charge(-500)
+          //   .linkDistance(200)
+          //   .friction(0.8)
+          //   .size([this.width, this.height]);
         }
         getAllLink() {
           this.line_tags = this.svg
@@ -102,6 +150,7 @@
         setNode(node_tags){
           //取得20个颜色的序列
           var color = d3.scale.category20();
+          node_tags.selectAll('g > *').remove();
           node_tags 
             .append("circle")
             .attr("class", "node")
@@ -113,6 +162,7 @@
             });
           node_tags.transition().duration(2000).ease("blunce")
           //标记鼠标悬停的标签
+          // node_tags.selectAll('title').remove();
           node_tags.append("title").text(function (d) {
             return d.name;
           });
@@ -122,6 +172,8 @@
           node_tags.on('mouseout', (d)=>{
                 this.highlightObject(null)
             })
+
+          // node_tags.selectAll('text').remove();
           //节点上显示的姓名
           node_tags
             .append("text")
@@ -135,6 +187,8 @@
         highlightObject(obj) {
           if (obj) {
             var objIndex = obj.index;
+
+              //确定节点关系
               this.dependsNode = this.dependsNode.concat([objIndex]);
               this.dependsLinkAndText = this.dependsLinkAndText.concat([objIndex]);
               this.lines.forEach( (lkItem)=> {
@@ -144,16 +198,17 @@
                       this.dependsNode = this.dependsNode.concat([lkItem.source.index]);
                   }
               });
-
+              
+              //设置样式
               // 隐藏节点
               this.svg.selectAll('circle').filter((d)=>{
                   return (this.dependsNode.indexOf(d.index) == -1);
-              }).transition().style('opacity', 0.1);
+              }).transition().style('opacity', 0).select("nodetext").style('opacity', 0);
               // 隐藏线
               this.svg.selectAll('.link').filter((d)=>{
                   // return true;
                   return ((this.dependsLinkAndText.indexOf(d.source.index) == -1) && (this.dependsLinkAndText.indexOf(d.target.index) == -1))
-              }).transition().style('opacity', 0.1);
+              }).transition().style('opacity', 0);
 
           } else {
               // 取消高亮
@@ -204,31 +259,37 @@
         randomFrom(lowerValue,upperValue) {
            return Math.floor(Math.random() * (upperValue - lowerValue + 1) + lowerValue);
         }
-        updata() {
-          let {lines,nodes,force} = this
-          nodes.push({ 
-            name: this.getRandomChineseWord(), 
-            group: this.randomFrom(10,20) 
-          });
-          lines.push(
-          { 
-              source: nodes.length-1, 
-              target: this.randomFrom(0,nodes.length-1), 
-              value: 1 
-          });
+        delete(){
           this.line_tags = this.line_tags.data(this.force.links())
-          this.line_tags.enter()
-            .append("line")
-            .attr("class", "link")
-            .attr("stroke", "#09F")
-            .attr("stroke-opacity", "0.4")
-            .style("stroke-width", 2)
+          this.line_tags.exit().remove();  
           this.node_tags =  this.node_tags.data(this.force.nodes())
-          this.node_tags.enter()
-            .append("g")
-            .call(this.force.drag)
-          this.setNode(this.node_tags)
-          this.node_tags.exit().remove();
+          this.node_tags.exit().remove();  
+        }
+        updata(l,n) {   //l 线 n 节点
+          let {lines,nodes,force} = this
+
+          if(n&&n!=null){
+            nodes.push(n);
+            this.node_tags =  this.node_tags.data(this.force.nodes())
+            this.node_tags.enter()
+              .append("g")
+              .call(this.force.drag)
+            this.setNode(this.node_tags)
+          }
+          if(l&&l!=null){
+            if(l instanceof Array){
+              l.forEach(i=>lines.push(i))
+            }else{
+              lines.push(l);
+            }
+            this.line_tags = this.line_tags.data(this.force.links())
+            this.line_tags.enter()
+              .append("line")
+              .attr("class", "link")
+              .attr("stroke", "#09F")
+              .attr("stroke-opacity", "0.4")
+              .style("stroke-width", 2)
+          }
           this.force.start();
         }
         init() {
@@ -255,23 +316,13 @@
         //target - 边的目标节点;
         //index - 基于 0 的在 links 中的索引, 会自动分配
         // links.source = node的index
-        let lines = [
-        { source: 0, target: 1, value: 0 },
-        { source: 1, target: 2, value: 3 },
-        { source: 2, target: 3, value: 2 },
-        { source: 3, target: 3, value: 1 },
-        ];
-        let nodes = [
-          { name: "L", group: 5 },
-          { name: "O", group: 6 },
-          { name: "V", group: 7 },
-          { name: "E", group: 8 },
-        ];
-        let f = new Force(lines, nodes, 1900, 940);
-        f.init();
-
+        let graph = new Graph(2);
+        let lineArr 
+        new Array(2).fill('').forEach((item,index,arr)=>{
+          graph.addEdge(Graph.randomFrom(0,arr.length),Graph.randomFrom(0,arr.length))
+        })
         d3.select('#addBtn').on('click',()=>{
-            f.updata()
+          graph.addEdge(Graph.randomFrom(0,graph.vertices),Graph.randomFrom(0,graph.vertices))
         })
       })();
     </script>
