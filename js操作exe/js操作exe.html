@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./protocolcheck.js"></script>
+</head>
+<body>
+    <div>
+        <a href="weixin://">
+            open exe weixin
+        </a>
+    </div>
+    <script>
+    /*
+     * 检测是否已安装指定插件
+     *
+     * pluginName 插件名称
+     */
+     function checkPlugins(pluginName) {
+        window.protocolCheck(pluginName, function() {
+            // 没有安装时的执行函数
+            console.log('111111111');
+        });
+    }
+   checkPlugins('weixin1://') 
+    </script>
+</body>
+</html>

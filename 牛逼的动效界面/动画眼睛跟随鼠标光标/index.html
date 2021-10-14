@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动画眼睛跟随光标</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class = 'box'>
+        <div class="eye"></div>
+        <div class="eye"></div>
+    </div>
+    <script>
+        document.querySelector('body').addEventListener('mousemove',eyeball)
+        function eyeball(){
+            const eyes = document.querySelectorAll('.eye');
+            eyes.forEach(function(element){
+                console.log(element.clentWidth);
+                let x = (element.getBoundingClientRect().left) + (element.clentWidth/2);
+                let y = (element.getBoundingClientRect().top) + (element.clentHeight/2);
+
+                let radian = Math.atan2(event.pageX - x, event.pageY-y);
+                let rotation = (radian * (180/Math.PI)* -1)+270;
+                console.log(x,y,radian,rotation);
+                element.style.transform = "rotate("+rotation+"deg)"
+            });
+        }
+    </script>
+</body>
+</html>
