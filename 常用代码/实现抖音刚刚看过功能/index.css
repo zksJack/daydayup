@@ -1,0 +1,19 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+ul{
+    padding: 20px;
+    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+}
+li{
+    list-style-type:none
+}
+img{
+    width: 290px;
+    height: 200px;
+}

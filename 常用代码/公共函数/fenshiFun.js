@@ -1,5 +1,3 @@
-const btn = document.querySelector('.btn');
-const datas = Array.from({length: 10000},(_,i)=>i);
 // 任务分段执行
 const perforChunk=(data,taskHandler,scheduler)=>{
     if (typeof data === 'number') data = {length:data}
@@ -20,20 +18,7 @@ const perforChunk=(data,taskHandler,scheduler)=>{
     }
     _run();
 }
-const task= (data, index) =>{
-    const div = document.createElement('div');
-    div.textContent = index;
-    document.body.appendChild(div);
-}
-const scheduler=(cb)=>{
-    requestIdleCallback((idle)=>{
-        cb(()=> idle.timeRemaining() > 0);//渲染帧剩余时间；
-    })
-}
-btn.addEventListener('click',()=>{
-    perforChunk(datas,task,scheduler)
-})
-
+// 固定时间任务分段执行
 const browserPerformChunk=(datas,taskHandler)=>{
     const scheduler=(cb)=>{
         requestIdleCallback((idle)=>{
