@@ -21,7 +21,16 @@ const observer = new IntersectionObserver((entries)=>{
   setIndicatorVisible();
 })
 //获取可见元素的最小下标和最大下标
-const getRange = ()=>{}
+const getRange = ()=>{
+  let minIndex = Infinity;
+  let maxIndex = -Infinity;
+  for(let index of visibleIndex){
+    minIndex = Math.min(minIndex,index);
+    maxIndex = Math.max(maxIndex,index);
+  }
+  return [minIndex,maxIndex]
+  // return [50, 100]
+}
 //创建指定页数所包含的元素
 const createElement = (page)=>{
   const childrenLen = container.children.length;
@@ -30,6 +39,7 @@ const createElement = (page)=>{
     const item = document.createElement('div');
     item.className = 'item';
     item.dataset.index = i;
+    item.innerHTML=i
     if(i===currentIndex){
       item.classList.add('playing');
     }
@@ -39,20 +49,20 @@ const createElement = (page)=>{
 }
 createElement(1);//初始创建一页；
 
-const loadPage = (page)=>{
-  const [minIndex,maxIndex]= getRange(page);
+const loadPage = ()=>{
+  const [minIndex,maxIndex]= getRange();
   const pages= new Set();
   for(let i = minIndex;i<=maxIndex;i++){
     pages.add(Math.ceil((i+1)/SIZE));
   }
   for(const page of pages){
-    if(loadPages.has(page)) continue;
-    loadPages.add(page);
+    if(liadedPages.has(page)) continue;
+    liadedPages.add(page);
     $.get('http://127.0.0.1:3000/b/getFiles',function(result){
       const startIndex = (page-1)*SIZE;
       for(let i = 0;i<result.length ;i++){
         const item = container.children[startIndex+i];
-        item.innerHTML =`<img src="./img/${result[i]}" alt="">`;
+        item.innerHTML =`<img src="./img/${result[i]}" alt=""> `;
       }
     })
   }
@@ -66,13 +76,15 @@ const debounce=(fn,delay)=>{
     },delay);
   }
 }
-const loadPagesDebounce = debounce(liadedPages,500);
+const loadPagesDebounce = debounce(loadPage,500);
 
 //设置指示器是否可见
 const setIndicatorVisible = ()=>{
-  const [minIndex,maxIndex] = getRange(currentPage);
+  const [minIndex,maxIndex] = getRange();
   indicator.style.display =currentIndex>=minIndex&&currentIndex<=maxIndex?'none': 'block';
 }
+const page = Math.floor(currentIndex/SIZE)+1;
+createElement(page);
 loadPage();
 //点击获取图片
 const taskHandler = (data)=>{
@@ -85,13 +97,13 @@ btn.addEventListener('click',()=>{
     browserPerformChunk(result,taskHandler) 
   })
 })
+
 //刚刚看过按钮
 indicator.addEventListener('click',(e)=>{
-  const page = Math.floor(currentIndex/SIZE)+1;
-  createElement(page);
-  container.children[currentIndex].scrollIntoView({
-    behavior: 'smooth',
-    block: 'center'
-  });
+
+    container.children[currentIndex].scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
   indicator.style.display = 'none';
 });
